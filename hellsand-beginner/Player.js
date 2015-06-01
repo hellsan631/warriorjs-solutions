@@ -4,7 +4,7 @@ class Player {
     if(typeof this.ai ==='undefined')
       this.ai = new Ai(warrior);
 
-    var action = this.ai.decide();
+    var action = this.ai.decide('forward');
 
     if(action === 'attack')
       warrior.attack(this.ai.actionDirection);
@@ -14,8 +14,6 @@ class Player {
       warrior.rest();
 
   }
-
-
 }
 
 class Ai{
@@ -23,23 +21,37 @@ class Ai{
     this.unit = warrior;
     this.baseHP = warrior.health();
   }
-  decide(){
+  decide(direction){
 
     var hp = this.unit.health();
+    var action;
+    this.actionDirection = direction;
 
-    return 'walk';
+    if(hp < 8){
+      this.inDanger = true;
+    }else if(hp === this.baseHP){
+      this.inDanger = false;
+    }
+
+    if(this.inDanger){
+      if(this.unit.feel(direction).isEnemy()){
+        action = 'walk';
+        this.actionDirection = 'backward';
+      }else{
+        action = 'rest';
+      }
+    }else{
+      if(this.unit.feel(direction).isEnemy()){
+        action = 'attack';
+      }else{
+        action = 'walk';
+      }
+    }
+
+    return action;
 
   }
-  danger(){
 
-  }
-
-}
-
-class Opponent{
-  constructor(health, damage) {
-
-  }
 }
 
 global.Player = Player;
