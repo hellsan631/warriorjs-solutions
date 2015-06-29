@@ -10,6 +10,8 @@ class Player {
       warrior.attack(this.ai.actionDirection);
     else if(action === 'walk')
       warrior.walk(this.ai.actionDirection);
+    else if(action === 'rescue')
+      warrior.rescue(this.ai.actionDirection);
     else if(action === 'rest')
       warrior.rest();
 
@@ -31,7 +33,7 @@ class Ai{
 
     var hp = this.unit.health();
 
-    if(this.unit.health() < 8){
+    if(this.unit.health() < this.baseHP){
       this.inDanger = true;
     }else if(hp === this.baseHP){
       this.inDanger = false;
@@ -43,31 +45,34 @@ class Ai{
       this.underAttack = false;
     }
 
+    this.obsticle = this.unit.feel(this.actionDirection);
+
     return this.weighAction();
 
   }
   weighAction(){
     var action;
 
-    if(this.inDanger){
+    if(this.obsticle.isEnemy()){
       if(this.underAttack){
-        if(this.unit.feel(this.actionDirection).isEnemy()){
-          action = 'attack';
-        }else{
-          this.actionDirection = 'forward';
-          action = 'walk';
-        }
-      }else if(this.unit.feel(this.actionDirection).isEnemy()){
+        action = 'attack';
+        this.actionDirection = 'forward';
+      } else if(this.inDanger){
         action = 'walk';
         this.actionDirection = 'backward';
       } else {
-        action = 'rest';
-      }
-    }else{
-      if(this.unit.feel(this.actionDirection).isEnemy()){
         action = 'attack';
-      }else{
+      }
+    } else if(this.obsticle.isCaptive()){
+      action = 'rescue';
+      this.actionDirection = 'forward';
+    } else {
+      if(this.underAttack){
+        action = 'walk';
         this.actionDirection = 'forward';
+      }else if(this.inDanger){
+        action = 'rest';
+      }else {
         action = 'walk';
       }
     }
@@ -75,12 +80,6 @@ class Ai{
     return action;
   }
 
-}
-
-class Opponent{
-  constructor(enemy) {
-
-  }
 }
 
 global.Player = Player;
